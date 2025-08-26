@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monaco Workspace</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+</head>
+<body>
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2>Welcome to Monaco Workspace</h2>
+                <p>Enter your email to access your workspace</p>
+            </div>
+            <div class="modal__body">
+                <form id="authForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="emailInput" class="form-label">Email Address</label>
+                        <input type="email" id="emailInput" class="form-control" placeholder="your@email.com" required>
+                    </div>
+                    <button type="submit" class="btn btn--primary btn--full-width">Access Workspace</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="app hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header__brand">
+                <h1>Monaco Workspace</h1>
+            </div>
+            <div class="header__user">
+                <span id="userEmail" class="user-email"></span>
+                <button id="logoutBtn" class="btn btn--outline btn--sm">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab nav-tab--active" data-section="diff">Diff & Format</button>
+            <button class="nav-tab" data-section="editor">Text Editor</button>
+            <button class="nav-tab" data-section="snippets">Snippets</button>
+            <button class="nav-tab" data-section="links">Link Manager</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Diff & Format Section -->
+            <section id="diffSection" class="section section--active">
+                <div class="section__header">
+                    <h2>Diff & Format</h2>
+                    <div class="section__controls">
+                        <select id="languageSelect" class="form-control">
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="json">JSON</option>
+                        </select>
+                        <button id="formatBtn" class="btn btn--secondary">Format</button>
+                        <button id="clearBtn" class="btn btn--outline">Clear</button>
+                        <button id="compareBtn" class="btn btn--primary">Compare</button>
+                    </div>
+                </div>
+                
+                <div class="editors-container">
+                    <div class="editor-panel">
+                        <div class="editor-header">Original</div>
+                        <div id="originalEditor" class="editor"></div>
+                    </div>
+                    <div class="editor-panel">
+                        <div class="editor-header">Modified</div>
+                        <div id="modifiedEditor" class="editor"></div>
+                    </div>
+                </div>
+
+                <div class="diff-results">
+                    <div class="diff-stats" id="diffStats" style="display: none;">
+                        <span class="stat stat--additions">+<span id="additions">0</span></span>
+                        <span class="stat stat--deletions">-<span id="deletions">0</span></span>
+                        <span class="stat stat--changes"><span id="changes">0</span> changes</span>
+                    </div>
+                    <div id="diffEditor" class="diff-editor" style="display: none;"></div>
+                </div>
+            </section>
+
+            <!-- Text Editor Section -->
+            <section id="editorSection" class="section">
+                <div class="section__header">
+                    <h2>Text Editor</h2>
+                    <div class="section__controls">
+                        <input type="text" id="docTitle" class="form-control" placeholder="Document title" style="max-width: 200px;">
+                        <button id="saveDocBtn" class="btn btn--primary">Save</button>
+                        <button id="loadDocBtn" class="btn btn--secondary">Load</button>
+                        <button id="exportDocBtn" class="btn btn--outline">Export</button>
+                        <button id="fullscreenBtn" class="btn btn--outline">Fullscreen</button>
+                    </div>
+                </div>
+                
+                <div class="editor-container">
+                    <div id="textEditor" class="editor"></div>
+                </div>
+                
+                <div class="editor-status">
+                    <div class="status-item">
+                        <span id="charCount">0</span> characters
+                    </div>
+                    <div class="status-item">
+                        <span id="wordCount">0</span> words
+                    </div>
+                    <div class="status-item">
+                        <span id="lineCount">1</span> lines
+                    </div>
+                    <div class="status-item">
+                        Auto-save: <span id="autoSaveStatus">Ready</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Snippets Section -->
+            <section id="snippetsSection" class="section">
+                <div class="section__header">
+                    <h2>Code Snippets</h2>
+                    <div class="section__controls">
+                        <input type="text" id="snippetSearch" class="form-control" placeholder="Search snippets..." style="max-width: 200px;">
+                        <select id="snippetLanguage" class="form-control">
+                            <option value="">All Languages</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="json">JSON</option>
+                        </select>
+                        <button id="addSnippetBtn" class="btn btn--primary">Add Snippet</button>
+                    </div>
+                </div>
+                
+                <div class="snippets-grid" id="snippetsGrid">
+                    <!-- Snippets will be populated here -->
+                </div>
+            </section>
+
+            <!-- Link Manager Section -->
+            <section id="linksSection" class="section">
+                <div class="section__header">
+                    <h2>Link Manager</h2>
+                    <div class="section__controls">
+                        <input type="text" id="linkSearch" class="form-control" placeholder="Search links..." style="max-width: 200px;">
+                        <select id="linkCategory" class="form-control">
+                            <option value="">All Categories</option>
+                            <option value="development">Development</option>
+                            <option value="design">Design</option>
+                            <option value="documentation">Documentation</option>
+                            <option value="tools">Tools</option>
+                            <option value="learning">Learning</option>
+                            <option value="reference">Reference</option>
+                        </select>
+                        <button id="addLinkBtn" class="btn btn--primary">Add Link</button>
+                    </div>
+                </div>
+                
+                <div class="links-grid" id="linksGrid">
+                    <!-- Links will be populated here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Snippet Modal -->
+    <div id="snippetModal" class="modal hidden">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 id="snippetModalTitle">Add Snippet</h3>
+                <button class="modal__close">&times;</button>
+            </div>
+            <div class="modal__body">
+                <form id="snippetForm">
+                    <div class="form-group">
+                        <label for="snippetName" class="form-label">Name</label>
+                        <input type="text" id="snippetName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="snippetLang" class="form-label">Language</label>
+                        <select id="snippetLang" class="form-control" required>
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="json">JSON</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="snippetCode" class="form-label">Code</label>
+                        <div id="snippetCodeEditor" class="modal-editor"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="snippetDescription" class="form-label">Description</label>
+                        <textarea id="snippetDescription" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline modal__close">Cancel</button>
+                        <button type="submit" class="btn btn--primary">Save Snippet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Modal -->
+    <div id="linkModal" class="modal hidden">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 id="linkModalTitle">Add Link</h3>
+                <button class="modal__close">&times;</button>
+            </div>
+            <div class="modal__body">
+                <form id="linkForm">
+                    <div class="form-group">
+                        <label for="linkTitle" class="form-label">Title</label>
+                        <input type="text" id="linkTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="linkUrl" class="form-label">URL</label>
+                        <input type="url" id="linkUrl" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="linkDesc" class="form-label">Description</label>
+                        <textarea id="linkDesc" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="linkCat" class="form-label">Category</label>
+                        <select id="linkCat" class="form-control" required>
+                            <option value="development">Development</option>
+                            <option value="design">Design</option>
+                            <option value="documentation">Documentation</option>
+                            <option value="tools">Tools</option>
+                            <option value="learning">Learning</option>
+                            <option value="reference">Reference</option>
+                        </select>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline modal__close">Cancel</button>
+                        <button type="submit" class="btn btn--primary">Save Link</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document List Modal -->
+    <div id="docListModal" class="modal hidden">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3>Load Document</h3>
+                <button class="modal__close">&times;</button>
+            </div>
+            <div class="modal__body">
+                <div id="documentsList" class="documents-list">
+                    <!-- Documents will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Snackbar Container -->
+    <div id="snackbarContainer" class="snackbar-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

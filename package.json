@@ -1,0 +1,118 @@
+{
+  "name": "text-diff-formatter",
+  "displayName": "Text Diff & Formatter",
+  "description": "A VS Code extension for comparing text differences with formatting options and inline color-coded diff",
+  "version": "1.0.0",
+  "publisher": "textdiffformatter",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "icon": "media/diff-icon.png",
+  "contributes": {
+    "commands": [
+      {
+        "command": "textdiff.openDiffView",
+        "title": "Open Text Diff & Formatter",
+        "category": "Text Diff",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "textdiff.compareSelectedFiles",
+        "title": "Compare Selected Files with Formatting",
+        "category": "Text Diff"
+      },
+      {
+        "command": "textdiff.formatAndCompare",
+        "title": "Format and Compare Text",
+        "category": "Text Diff"
+      },
+      {
+        "command": "textdiff.focus",
+        "title": "Focus Text Diff Panel",
+        "category": "Text Diff"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "textdiff",
+          "title": "Text Diff & Formatter",
+          "icon": "$(diff)"
+        }
+      ]
+    },
+    "views": {
+      "textdiff": [
+        {
+          "type": "webview",
+          "id": "textdiff.diffView",
+          "name": "Diff Viewer",
+          "when": "true"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "textdiff.openDiffView",
+          "when": "view == textdiff.diffView",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "textdiff.compareSelectedFiles",
+          "when": "explorerResourceIsFolder == false",
+          "group": "7_modification"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "textdiff.formatAndCompare",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Text Diff & Formatter",
+      "properties": {
+        "textdiff.autoFormat": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically format text before comparison"
+        },
+        "textdiff.ignoreWhitespace": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ignore whitespace differences in comparison"
+        },
+        "textdiff.sideBySide": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show diff in side-by-side view by default"
+        },
+        "textdiff.showInlineColors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show red/green colors for differences inline"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "diff": "^5.1.0"
+  }
+}
